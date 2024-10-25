@@ -1,0 +1,28 @@
+server:
+  port: 8999
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/easychat?useSSL=false&serverTimezone=GMT%2B8
+    username: root
+    password: 12345678
+  redis:
+    port: 6379
+    host: localhost
+
+#mybatisplus配置
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl #打印sql
+    map-underscore-to-camel-case: true  # 开启数据库字段下划线自动转换为驼峰格式
+  mapper-locations: classpath:/mapper/\*.mapper.xml      #xml文件的位置(resources下的mapper文件夹)
+  global-config:
+    db-config:
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+    plugins:
+      - com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor:
+          type: pagination
+logging:
+  level:
+    springfox: DEBUG

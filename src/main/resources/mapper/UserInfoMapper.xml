@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.echat.easychat.mapper.UserInfoMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.echat.easychat.entity.UserInfo">
+        <id column="user_id" property="userId" />
+        <result column="email" property="email" />
+        <result column="nick_name" property="nickName" />
+        <result column="join_type" property="joinType" />
+        <result column="sex" property="sex" />
+        <result column="password" property="password" />
+        <result column="personal_signature" property="personalSignature" />
+        <result column="status" property="status" />
+        <result column="create_time" property="createTime" />
+        <result column="last_login_time" property="lastLoginTime" />
+        <result column="area_name" property="areaName" />
+        <result column="area_code" property="areaCode" />
+        <result column="last_off_time" property="lastOffTime" />
+        <result column="level" property="level" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        user_id, email, nick_name, join_type, sex, password, personal_signature, status, create_time, last_login_time, area_name, area_code, last_off_time, level
+    </sql>
+
+</mapper>
