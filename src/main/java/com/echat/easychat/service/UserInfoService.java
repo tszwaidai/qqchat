@@ -1,5 +1,6 @@
 package com.echat.easychat.service;
 
+import com.echat.easychat.dto.LoginDTO;
 import com.echat.easychat.dto.RegisterDTO;
 import com.echat.easychat.dto.Result;
 import com.echat.easychat.entity.UserInfo;
@@ -20,4 +21,6 @@ public interface UserInfoService extends IService<UserInfo> {
     Result getCaptcha();
 
     Result register(RegisterDTO registerDTO);
+
+    Result login(LoginDTO loginDTO);
 }

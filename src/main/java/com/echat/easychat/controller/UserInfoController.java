@@ -1,10 +1,13 @@
 package com.echat.easychat.controller;
 
+import com.echat.easychat.dto.LoginDTO;
 import com.echat.easychat.dto.RegisterDTO;
 import com.echat.easychat.dto.Result;
 import com.echat.easychat.service.UserInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+
 /**
  * <p>
  * 用户信息 前端控制器
@@ -54,6 +57,15 @@ public class UserInfoController {
         return userInfoService.register(registerDTO);
     }
 
+    /**
+     * 登录
+     * @param loginDTO
+     * @return
+     */
+    @PostMapping("/login")
+    public Result login(@RequestBody LoginDTO loginDTO) {
+        return userInfoService.login(loginDTO);
+    }
 
 
 

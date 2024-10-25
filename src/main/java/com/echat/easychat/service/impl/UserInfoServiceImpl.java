@@ -2,6 +2,7 @@ package com.echat.easychat.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.echat.easychat.dto.LoginDTO;
 import com.echat.easychat.dto.RegisterDTO;
 import com.echat.easychat.dto.Result;
 import com.echat.easychat.entity.UserInfo;
@@ -11,16 +12,24 @@ import com.echat.easychat.service.UserInfoService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.echat.easychat.utils.RandomUserId;
 import com.pig4cloud.captcha.SpecCaptcha;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+
+import static com.echat.easychat.utils.UserConstants.EXPIRATION_TIME;
+import static com.echat.easychat.utils.UserConstants.SECRET_KEY;
 
 /**
  * <p>
@@ -129,5 +138,44 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         return Result.ok("注册成功");
 
+    }
+
+    /**
+     * 登录
+     * @param loginDTO
+     * @return
+     */
+    @Override
+    public Result login(LoginDTO loginDTO) {
+        // 校验邮箱和密码
+        String email = loginDTO.getEmail();
+        String password = loginDTO.getPassword();
+        if (!StringUtils.hasText(email) || !StringUtils.hasText(password)) {
+            return Result.fail("邮箱和密码均为必填项");
+        }
+
+        // 根据邮箱查询用户
+        UserInfo userInfo = userInfoMapper.selectOne(new QueryWrapper<UserInfo>()
+                .eq("email", email));
+        if (userInfo == null || !userInfo.getPassword().equals(password)) {
+            return Result.fail("邮箱或密码错误");
+        }
+
+        // 生成JWT token
+        String token = Jwts.builder()
+                .setSubject(userInfo.getUserId())
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .signWith(SECRET_KEY)
+                .compact();
+
+        // 将 token 存入 Redis，设置过期时间与token一致
+        String tokenKey = "token:" + userInfo.getUserId();
+        stringRedisTemplate.opsForValue().set(tokenKey, token, EXPIRATION_TIME, TimeUnit.MILLISECONDS);
+
+        // 返回token给前端
+        HashMap<String, String> data = new HashMap<>();
+        data.put("token", token);
+        return Result.ok("登录成功");
     }
 }
