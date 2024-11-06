@@ -49,12 +49,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Autowired
     private UserInfoMapper userInfoMapper;
 
-    @Override
-    public Result getUserList(int currentPage, int pageSize) {
-        //创建分页对象
-        Page<UserInfo> page = new Page<>(currentPage, pageSize);
-        return Result.ok(page);
-    }
 
     /**
      * 获取验证码
@@ -62,9 +56,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
      */
     @Override
     public Result getCaptcha() {
-        // 生成算术验证码
+        // 生成验证码
         SpecCaptcha captcha = new SpecCaptcha(130, 48);
-        captcha.setLen(4); //
+        captcha.setLen(4); //设置四位字母
         String captchaText = captcha.text();
         String key = UUID.randomUUID().toString();
 
@@ -151,14 +145,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         String email = loginDTO.getEmail();
         String password = loginDTO.getPassword();
         if (!StringUtils.hasText(email) || !StringUtils.hasText(password)) {
-            return Result.fail("邮箱和密码均为必填项");
+            return Result.fail("邮箱和密码均为必填项",400);
         }
 
         // 根据邮箱查询用户
         UserInfo userInfo = userInfoMapper.selectOne(new QueryWrapper<UserInfo>()
                 .eq("email", email));
         if (userInfo == null || !userInfo.getPassword().equals(password)) {
-            return Result.fail("邮箱或密码错误");
+            return Result.fail("邮箱或密码错误",401);
         }
 
         // 生成JWT token
@@ -174,8 +168,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         stringRedisTemplate.opsForValue().set(tokenKey, token, EXPIRATION_TIME, TimeUnit.MILLISECONDS);
 
         // 返回token给前端
-        HashMap<String, String> data = new HashMap<>();
+        HashMap<String, Object> data = new HashMap<>();
+        data.put("userInfo", userInfo);
         data.put("token", token);
-        return Result.ok("登录成功");
+        return Result.ok(data);
     }
 }

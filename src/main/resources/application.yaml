@@ -26,3 +26,5 @@ mybatis-plus:
 logging:
   level:
     springfox: DEBUG
+    org.apache.ibatis: DEBUG
+    org.mybatis.spring.SqlSessionFactoryBean: DEBUG

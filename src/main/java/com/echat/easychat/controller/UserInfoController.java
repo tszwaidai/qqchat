@@ -25,20 +25,6 @@ public class UserInfoController {
 
 
     /**
-     * 分页查询无过滤条件
-     * @param currentPage
-     * @param pageSize
-     * @return
-     */
-    @GetMapping("/userList")
-    public Result getUserList(
-            @RequestParam(defaultValue = "1") int currentPage,
-            @RequestParam(defaultValue = "10") int pageSize) {
-        return userInfoService.getUserList(currentPage, pageSize);
-    }
-
-
-    /**
      * 获取验证码
      * @return
      */

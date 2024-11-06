@@ -16,7 +16,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface UserInfoService extends IService<UserInfo> {
 
-    Result getUserList(int currentPage, int pageSize);
+
 
     Result getCaptcha();
 
