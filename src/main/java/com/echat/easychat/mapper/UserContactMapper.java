@@ -10,9 +10,9 @@ import org.apache.ibatis.annotations.Mapper;
  * </p>
  *
  * @author tszwaidai
- * @since 2024-11-04
+ * @since 2024-11-06
  */
 @Mapper
 public interface UserContactMapper extends BaseMapper<UserContact> {
-    UserContact selectByContactId(String contactId);
+
 }

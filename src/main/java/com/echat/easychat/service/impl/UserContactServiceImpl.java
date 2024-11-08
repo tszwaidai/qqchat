@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
  * </p>
  *
  * @author tszwaidai
- * @since 2024-11-04
+ * @since 2024-11-06
  */
 @Slf4j
 @Service
@@ -29,10 +29,9 @@ public class UserContactServiceImpl extends ServiceImpl<UserContactMapper, UserC
     private UserInfoMapper userInfoMapper;
     @Autowired
     private UserContactMapper userContactMapper;
-
     @Override
     public Result search(String contactId) {
-        UserContact userContact = userContactMapper.selectByContactId(contactId);
+        UserContact userContact = userContactMapper.selectById(contactId);
         UserInfo userInfo = userInfoMapper.selectById(contactId);
         // 从联系表中查找当前登录用户和搜索用户的关系
 
@@ -56,5 +55,4 @@ public class UserContactServiceImpl extends ServiceImpl<UserContactMapper, UserC
 
         return Result.ok(resultDTO);
     }
-
 }

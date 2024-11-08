@@ -16,8 +16,5 @@
     <sql id="Base_Column_List">
         user_id, contact_id, contact_type, create_time, status, last_update_time
     </sql>
-    <select id="selectByContactId" resultType="com.echat.easychat.entity.UserContact">
-        SELECT * FROM user_contact WHERE contact_id = #{contactId}
-    </select>
 
 </mapper>
