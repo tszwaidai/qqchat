@@ -1,6 +1,7 @@
 package com.echat.easychat.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
@@ -28,7 +29,7 @@ public class UserContact implements Serializable {
     /**
      * 用户ID
      */
-//    @TableId(value = "user_id", type = IdType.AUTO)
+    @TableField(value = "user_id")
     private String userId;
 
     /**

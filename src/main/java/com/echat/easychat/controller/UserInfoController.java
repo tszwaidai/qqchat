@@ -4,6 +4,7 @@ import com.echat.easychat.dto.LoginDTO;
 import com.echat.easychat.dto.RegisterDTO;
 import com.echat.easychat.dto.Result;
 import com.echat.easychat.service.UserInfoService;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,11 +49,11 @@ public class UserInfoController {
      * @param loginDTO
      * @return
      */
+    @SneakyThrows
     @PostMapping("/login")
     public Result login(@RequestBody LoginDTO loginDTO) {
         return userInfoService.login(loginDTO);
     }
-
 
 
 }

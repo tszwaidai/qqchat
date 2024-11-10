@@ -1,22 +1,23 @@
 package com.echat.easychat.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.echat.easychat.dto.LoginDTO;
 import com.echat.easychat.dto.RegisterDTO;
 import com.echat.easychat.dto.Result;
+import com.echat.easychat.dto.TokenUserInfoDTO;
 import com.echat.easychat.entity.UserInfo;
-import com.echat.easychat.enums.UserStatus;
+import com.echat.easychat.enums.UserStatusEnum;
 import com.echat.easychat.mapper.UserInfoMapper;
 import com.echat.easychat.service.UserInfoService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.echat.easychat.utils.RandomUserId;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pig4cloud.captcha.SpecCaptcha;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -122,7 +123,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         userInfo.setPassword(registerDTO.getPassword());
         userInfo.setCreateTime(LocalDateTime.now());
         userInfo.setLevel("1"); // 账号初始等级为1
-        userInfo.setStatus(UserStatus.ENABLED.getValue());
+        userInfo.setStatus(UserStatusEnum.ENABLED.getValue());
         userInfo.setLastOffTime(LocalDateTime.now());
 
 
@@ -140,7 +141,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
      * @return
      */
     @Override
-    public Result login(LoginDTO loginDTO) {
+    public Result login(LoginDTO loginDTO) throws JsonProcessingException {
         // 校验邮箱和密码
         String email = loginDTO.getEmail();
         String password = loginDTO.getPassword();
@@ -158,19 +159,37 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         // 生成JWT token
         String token = Jwts.builder()
                 .setSubject(userInfo.getUserId())
+                .claim("nickName", userInfo.getNickName())  // 添加 nickName
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(SECRET_KEY)
                 .compact();
 
+
+        // 登录信息保存至此
+//        TokenUserInfoDTO tokenUserInfoDTO = getTokenUserInfoDTO(userInfo);
+//        String userInfoJson = new ObjectMapper().writeValueAsString(tokenUserInfoDTO);
+//        String userInfoKey = "userInfo:" + userInfo.getUserId();
+//        stringRedisTemplate.opsForValue().set(userInfoKey, userInfoJson, EXPIRATION_TIME, TimeUnit.MILLISECONDS);
+
+
         // 将 token 存入 Redis，设置过期时间与token一致
         String tokenKey = "token:" + userInfo.getUserId();
         stringRedisTemplate.opsForValue().set(tokenKey, token, EXPIRATION_TIME, TimeUnit.MILLISECONDS);
+
+
 
         // 返回token给前端
         HashMap<String, Object> data = new HashMap<>();
         data.put("userInfo", userInfo);
         data.put("token", token);
         return Result.ok(data);
+    }
+    private TokenUserInfoDTO getTokenUserInfoDTO(UserInfo userInfo) {
+        TokenUserInfoDTO tokenUserInfoDTO = new TokenUserInfoDTO();
+        tokenUserInfoDTO.setUserId(userInfo.getUserId());
+        tokenUserInfoDTO.setNickName(userInfo.getNickName());
+
+        return tokenUserInfoDTO;
     }
 }

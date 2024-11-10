@@ -1,6 +1,7 @@
 package com.echat.easychat.service;
 
 import com.echat.easychat.dto.Result;
+import com.echat.easychat.dto.TokenUserInfoDTO;
 import com.echat.easychat.entity.UserContact;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -15,4 +16,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 public interface UserContactService extends IService<UserContact> {
 
     Result search(String contactId);
+
+
+    Result applyAdd(String token, String contactId, String applyInfo);
+
 }

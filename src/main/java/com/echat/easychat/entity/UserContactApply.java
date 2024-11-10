@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
+import java.time.LocalDateTime;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -43,7 +45,7 @@ public class UserContactApply implements Serializable {
     /**
      * 联系人类型 0:好友 1:群组
      */
-    private Boolean contactType;
+    private Integer contactType;
 
     /**
      * 联系人群组ID
@@ -53,12 +55,12 @@ public class UserContactApply implements Serializable {
     /**
      * 最后申请时间
      */
-    private Long lastApplyTime;
+    private LocalDateTime lastApplyTime;
 
     /**
      * 状态0:待处理 1:已同意 2:已拒绝 3:已拉黑
      */
-    private Boolean status;
+    private Integer status;
 
     /**
      * 申请信息

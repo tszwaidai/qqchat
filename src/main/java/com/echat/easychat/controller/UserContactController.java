@@ -1,12 +1,10 @@
 package com.echat.easychat.controller;
 
 import com.echat.easychat.dto.Result;
+import com.echat.easychat.dto.TokenUserInfoDTO;
 import com.echat.easychat.service.UserContactService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -38,5 +36,18 @@ public class UserContactController {
         return userContactService.search(contactId);
     }
 
+    /**
+     * 添加联系人
+     * @param
+     * @param
+     * @return
+     */
+    @PostMapping("/applyAdd")
+    public Result applyAdd(@RequestBody Map<String, String> requestData) {
+        String token = requestData.get("token");
+        String contactId = requestData.get("contactId");
+        String applyInfo = requestData.get("applyInfo");
+        return userContactService.applyAdd(token,contactId, applyInfo);
+    }
 
 }

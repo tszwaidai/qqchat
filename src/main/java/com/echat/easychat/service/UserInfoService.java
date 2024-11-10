@@ -5,6 +5,7 @@ import com.echat.easychat.dto.RegisterDTO;
 import com.echat.easychat.dto.Result;
 import com.echat.easychat.entity.UserInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 /**
  * <p>
@@ -22,5 +23,7 @@ public interface UserInfoService extends IService<UserInfo> {
 
     Result register(RegisterDTO registerDTO);
 
-    Result login(LoginDTO loginDTO);
+    Result login(LoginDTO loginDTO) throws JsonProcessingException;
+
+
 }

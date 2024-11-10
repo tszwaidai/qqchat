@@ -3,7 +3,7 @@ package com.echat.easychat.enums;
 /**
  * 联系人状态类型枚举
  */
-public enum UserContactStatus {
+public enum UserContactStatusEnum {
     NON_FRIEND(0, "非好友"),
     FRIEND(1, "好友"),
     DELETED_FRIEND(2, "已删除好友"),
@@ -15,7 +15,7 @@ public enum UserContactStatus {
     private final String statusName;
 
     // 构造方法
-    UserContactStatus(int status, String statusName) {
+    UserContactStatusEnum(int status, String statusName) {
         this.status = status;
         this.statusName = statusName;
     }
@@ -27,8 +27,8 @@ public enum UserContactStatus {
         return statusName;
     }
     // 根据 status 获取对应的枚举
-    public static UserContactStatus getByStatus(int status) {
-        for (UserContactStatus statusEnum : UserContactStatus.values()) {
+    public static UserContactStatusEnum getByStatus(int status) {
+        for (UserContactStatusEnum statusEnum : UserContactStatusEnum.values()) {
             if (statusEnum.getStatus() == status) {
                 return statusEnum;
             }
