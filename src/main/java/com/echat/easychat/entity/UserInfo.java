@@ -44,7 +44,7 @@ public class UserInfo implements Serializable {
     /**
      * 0:直接加入 1:同意后加好友
      */
-    private Boolean joinType;
+    private Integer joinType;
 
     /**
      * 性别 0:女 1:男

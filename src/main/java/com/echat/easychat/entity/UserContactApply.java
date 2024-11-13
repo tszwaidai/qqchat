@@ -66,4 +66,15 @@ public class UserContactApply implements Serializable {
      * 申请信息
      */
     private String applyInfo;
+
+    private String orderBy;
+
+    private Integer pageNo;
+    private Integer pageSize;
+    /**
+     * 申请人的名称
+     */
+    private String contactName;
+
+
 }

@@ -7,12 +7,15 @@ import com.echat.easychat.dto.UserContactSearchResultDTO;
 import com.echat.easychat.entity.UserContact;
 import com.echat.easychat.entity.UserContactApply;
 import com.echat.easychat.entity.UserInfo;
+import com.echat.easychat.enums.JoinTypeEnum;
+import com.echat.easychat.enums.TypeEnum;
 import com.echat.easychat.enums.UserContactApplyStatusEnum;
 import com.echat.easychat.enums.UserContactStatusEnum;
 import com.echat.easychat.exception.BusinessException;
 import com.echat.easychat.mapper.UserContactApplyMapper;
 import com.echat.easychat.mapper.UserContactMapper;
 import com.echat.easychat.mapper.UserInfoMapper;
+import com.echat.easychat.service.UserContactApplyService;
 import com.echat.easychat.service.UserContactService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.echat.easychat.utils.UserContext;
@@ -27,6 +30,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import java.time.LocalDateTime;
@@ -54,6 +58,8 @@ public class UserContactServiceImpl extends ServiceImpl<UserContactMapper, UserC
     private StringRedisTemplate stringRedisTemplate;
     @Autowired
     private UserContactApplyMapper userContactApplyMapper;
+    @Resource
+    private UserContactApplyService userContactApplyService;
 
     /**
      * 搜索联系人
@@ -73,16 +79,20 @@ public class UserContactServiceImpl extends ServiceImpl<UserContactMapper, UserC
         }
         UserContactSearchResultDTO resultDTO = new UserContactSearchResultDTO();
         resultDTO.setContactId(userInfo.getUserId());
-        resultDTO.setContactType(userContact.getContactType()); //代表好友
+        resultDTO.setContactType(TypeEnum.USER.getStatus()); //代表用户
         resultDTO.setNickName(userInfo.getNickName());
         resultDTO.setSex(userInfo.getSex() ? 1 : 0);
         resultDTO.setAreaName(userInfo.getAreaName());
-        resultDTO.setStatus(userContact.getStatus());
-
-        UserContactStatusEnum contactStatus = UserContactStatusEnum.getByStatus(userContact.getStatus());
-        if (contactStatus != null) {
-            resultDTO.setStatusName(contactStatus.getStatusName());
+        //如果从联系表中查找当前登录用户和搜索用户没有关系
+        if (userContact == null) {
+            resultDTO.setStatus(UserContactStatusEnum.NON_FRIEND.getStatus());
         }
+//        resultDTO.setStatus(UserContactStatusEnum.FRIEND.getStatus());
+
+//        UserContactStatusEnum contactStatus = UserContactStatusEnum.getByStatus(userContact.getStatus());
+//        if (contactStatus != null) {
+//            resultDTO.setStatusName(contactStatus.getStatusName());
+//        }
 
         return Result.ok(resultDTO);
     }
@@ -128,9 +138,19 @@ public class UserContactServiceImpl extends ServiceImpl<UserContactMapper, UserC
         if (userContact != null && userContact.getStatus().equals(UserContactStatusEnum.FRIEND_BLOCKED.getStatus())) {
             throw new BusinessException(403,"对方已经将你拉黑，无法添加");
         }
-        // TODO 加入群聊
-        //直接加入不用记录申请记录
 
+        UserInfo user = userInfoMapper.selectById(contactId);
+        Integer joinType = user.getJoinType();
+        log.info("查到的用户信息：{}",user);
+        log.info("用户的加入方式：{}",joinType);
+        // TODO 加入群聊
+        // TODO 直接加入好友不用记录申请记录 后续要修改
+        if (JoinTypeEnum.JOIN.getStatus().equals(joinType)) {
+            userContactApplyService.addContact(applyUserId,receiveUserId,contactId,0,applyInfo);
+            return Result.ok();
+        }
+
+        // TODO 这是需要经过对方同意的 需要测试
         UserContactApply dbApply = userContactApplyMapper.selectOne(new QueryWrapper<UserContactApply>()
                 .eq("apply_user_id",applyUserId)
                 .eq("receive_user_id",receiveUserId)
@@ -139,7 +159,7 @@ public class UserContactServiceImpl extends ServiceImpl<UserContactMapper, UserC
         if (dbApply == null) {
             UserContactApply contactApply = new UserContactApply();
             contactApply.setApplyUserId(applyUserId);
-            //TODO 后续要修改 加上群组
+            // TODO 后续要修改 加上群组
             contactApply.setContactType(0);
             contactApply.setReceiveUserId(receiveUserId);
             contactApply.setLastApplyTime(LocalDateTime.now());
