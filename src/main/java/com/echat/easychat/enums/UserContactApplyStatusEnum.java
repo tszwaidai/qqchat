@@ -23,7 +23,7 @@ public enum UserContactApplyStatusEnum {
         return desc;
     }
     // 根据状态值获取枚举实例
-    public static UserContactApplyStatusEnum fromStatus(Integer status) {
+    public static UserContactApplyStatusEnum getByStatus(Integer status) {
         for (UserContactApplyStatusEnum applyStatus : UserContactApplyStatusEnum.values()) {
             if (applyStatus.getStatus().equals(status)) {
                 return applyStatus;

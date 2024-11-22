@@ -20,4 +20,9 @@ public interface UserContactService extends IService<UserContact> {
 
     Result applyAdd(String token, String contactId, String applyInfo);
 
+    Result loadContact(String token,String contactType);
+
+    Result getContactUserInfo(String token, String contactId);
+
+    Result getContactInfo(String token, String contactId);
 }

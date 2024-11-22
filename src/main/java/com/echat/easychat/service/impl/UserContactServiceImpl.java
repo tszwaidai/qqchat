@@ -1,14 +1,15 @@
 package com.echat.easychat.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.echat.easychat.dto.Result;
-import com.echat.easychat.dto.TokenUserInfoDTO;
+import com.echat.easychat.dto.UserContactDTO;
 import com.echat.easychat.dto.UserContactSearchResultDTO;
 import com.echat.easychat.entity.UserContact;
 import com.echat.easychat.entity.UserContactApply;
 import com.echat.easychat.entity.UserInfo;
 import com.echat.easychat.enums.JoinTypeEnum;
-import com.echat.easychat.enums.TypeEnum;
+import com.echat.easychat.enums.UserContactTypeEnum;
 import com.echat.easychat.enums.UserContactApplyStatusEnum;
 import com.echat.easychat.enums.UserContactStatusEnum;
 import com.echat.easychat.exception.BusinessException;
@@ -19,22 +20,21 @@ import com.echat.easychat.service.UserContactApplyService;
 import com.echat.easychat.service.UserContactService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.echat.easychat.utils.UserContext;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.echat.easychat.vo.UserInfoVO;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.echat.easychat.utils.UserConstants.SECRET_KEY;
 
@@ -79,20 +79,16 @@ public class UserContactServiceImpl extends ServiceImpl<UserContactMapper, UserC
         }
         UserContactSearchResultDTO resultDTO = new UserContactSearchResultDTO();
         resultDTO.setContactId(userInfo.getUserId());
-        resultDTO.setContactType(TypeEnum.USER.getStatus()); //代表用户
+        resultDTO.setContactType(UserContactTypeEnum.USER.getStatus()); //代表用户
         resultDTO.setNickName(userInfo.getNickName());
-        resultDTO.setSex(userInfo.getSex() ? 1 : 0);
+        resultDTO.setSex(userInfo.getSex());
+//        resultDTO.setAreaName(userInfo.getAreaName());
+        // 替换 areaName 中的逗号为一个空格
         resultDTO.setAreaName(userInfo.getAreaName());
         //如果从联系表中查找当前登录用户和搜索用户没有关系
         if (userContact == null) {
             resultDTO.setStatus(UserContactStatusEnum.NON_FRIEND.getStatus());
         }
-//        resultDTO.setStatus(UserContactStatusEnum.FRIEND.getStatus());
-
-//        UserContactStatusEnum contactStatus = UserContactStatusEnum.getByStatus(userContact.getStatus());
-//        if (contactStatus != null) {
-//            resultDTO.setStatusName(contactStatus.getStatusName());
-//        }
 
         return Result.ok(resultDTO);
     }
@@ -182,5 +178,113 @@ public class UserContactServiceImpl extends ServiceImpl<UserContactMapper, UserC
 
         return Result.ok("申请发送成功");
     }
+
+    /**
+     * 获取联系人列表
+     * @param contactType
+     * @return
+     */
+    @Override
+    public Result loadContact(String token,String contactType) {
+        UserContactTypeEnum contactTypeEnum = UserContactTypeEnum.getByName(contactType);
+        log.info("当前联系人类型: {}",contactTypeEnum);
+        if (contactTypeEnum == null) {
+            throw new BusinessException(600,"无效的联系人类型");
+        }
+        // 获取当前用户ID
+        Claims claims = Jwts.parser()
+                .setSigningKey(SECRET_KEY)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        // 从 token 中获取 userId
+        String userId = claims.getSubject(); // 假设 token 的 `sub` 字段是 userId
+
+        log.info("获取到的当前用户ID：{}",userId);
+        // 查询数据库获取联系人列表
+        List<UserContact> userContacts = userContactMapper.selectByUserIdAndContactType(userId, contactTypeEnum.getStatus());
+        List<UserContactDTO> contactDTOList = new ArrayList<>();
+        for (UserContact userContact : userContacts) {
+            UserContactDTO contactDTO = new UserContactDTO();
+            contactDTO.setContactId(userContact.getContactId());
+            contactDTO.setContactType(userContact.getContactType());
+            contactDTO.setStatus(userContact.getStatus());
+            contactDTO.setCreateTime(userContact.getCreateTime());
+            contactDTO.setLastUpdateTime(userContact.getLastUpdateTime());
+
+            UserInfo userInfo = userInfoMapper.selectById(userContact.getContactId());
+            if (userInfo != null) {
+                contactDTO.setNickName(userInfo.getNickName());
+                //contactDTO.setSex();
+            }
+            contactDTOList.add(contactDTO);
+        }
+        return Result.ok(contactDTOList);
+
+    }
+
+    /**
+     *获取用户信息 非好友也可以知道
+     * @param token
+     * @param contactId
+     * @return
+     */
+    @Override
+    public Result getContactInfo(String token, String contactId) {
+        // 获取当前用户ID
+        Claims claims = Jwts.parser()
+                .setSigningKey(SECRET_KEY)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        // 从 token 中获取 userId
+        String userId = claims.getSubject(); //  token 的 `sub` 字段是 userId
+
+        return null;
+    }
+
+
+
+    /**
+     *获取用户详细信息 只有是好友才能知道
+     * @param token
+     * @param contactId
+     * @return
+     */
+    @Override
+    public Result getContactUserInfo(String token, String contactId) {
+        // 获取当前用户ID
+        Claims claims = Jwts.parser()
+                .setSigningKey(SECRET_KEY)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        // 从 token 中获取 userId
+        String userId = claims.getSubject(); //  token 的 `sub` 字段是 userId
+        UserContact userContact = userContactMapper.selectOne(new QueryWrapper<UserContact>()
+                .eq("user_id",userId)
+                .eq("contact_id",contactId)
+        );
+        log.info("查询到当前的登录用户的联系人信息:{}", JSON.toJSONString(userContact));
+        if (userContact == null ) {
+            return Result.fail("联系人不存在或没有权限查看");
+        }
+        UserInfoVO userInfoVO = userInfoMapper.selectByContactId(contactId);
+        userInfoVO.setUserId(userInfoVO.getUserId());
+        userInfoVO.setSex(userInfoVO.getSex());
+        userInfoVO.setJoinType(userInfoVO.getJoinType());
+        userInfoVO.setLevel(userInfoVO.getLevel());
+        userInfoVO.setNickName(userInfoVO.getNickName());
+        // 替换 areaName 中的逗号为一个空格
+        if (userInfoVO.getAreaName() != null) {
+            String areaNameWithSpaces = userInfoVO.getAreaName().replace(",", " ");
+            userInfoVO.setAreaName(areaNameWithSpaces);
+        }
+        userInfoVO.setAreaCode(userInfoVO.getAreaCode());
+        userInfoVO.setPersonalSignature(userInfoVO.getPersonalSignature());
+
+        return Result.ok(userInfoVO);
+    }
+
 
 }

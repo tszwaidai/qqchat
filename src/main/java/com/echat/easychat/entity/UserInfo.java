@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -49,7 +51,7 @@ public class UserInfo implements Serializable {
     /**
      * 性别 0:女 1:男
      */
-    private Boolean sex;
+    private Integer sex;
 
     /**
      * 密码
@@ -95,4 +97,10 @@ public class UserInfo implements Serializable {
      * 账号等级
      */
     private String level;
+
+
+    public String getAreaCode() {
+        return areaCode != null ? areaCode.replace(",", " ") : null;
+    }
+
 }

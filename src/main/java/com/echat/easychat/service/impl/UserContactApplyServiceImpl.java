@@ -3,7 +3,7 @@ package com.echat.easychat.service.impl;
 import com.echat.easychat.dto.Result;
 import com.echat.easychat.entity.UserContact;
 import com.echat.easychat.entity.UserContactApply;
-import com.echat.easychat.enums.TypeEnum;
+import com.echat.easychat.enums.UserContactTypeEnum;
 import com.echat.easychat.enums.UserContactApplyStatusEnum;
 import com.echat.easychat.enums.UserContactStatusEnum;
 import com.echat.easychat.exception.BusinessException;
@@ -19,10 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import static com.echat.easychat.utils.UserConstants.SECRET_KEY;
 
@@ -82,7 +79,7 @@ public class UserContactApplyServiceImpl extends ServiceImpl<UserContactApplyMap
     @Override
     // TODO 要加事务
     public Result dealWithApply(String userId, Integer applyId, Integer status) {
-        UserContactApplyStatusEnum statusEnum = UserContactApplyStatusEnum.fromStatus(status);
+        UserContactApplyStatusEnum statusEnum = UserContactApplyStatusEnum.getByStatus(status);
         if (statusEnum == null || UserContactApplyStatusEnum.INIT == statusEnum) {
             throw new BusinessException(600,"无效的状态");
         }
@@ -143,7 +140,7 @@ public class UserContactApplyServiceImpl extends ServiceImpl<UserContactApplyMap
         userContact.setStatus(UserContactStatusEnum.FRIEND.getStatus());
         contactList.add(userContact);
         // 如果是申请好友，接受人添加申请人，群组不用添加对方为好友
-        if (TypeEnum.USER.getStatus().equals(contactType)) {
+        if (UserContactTypeEnum.USER.getStatus().equals(contactType)) {
             UserContact userContact1 = new UserContact();
             userContact1.setUserId(applyUserId);
             userContact1.setContactId(contactId);

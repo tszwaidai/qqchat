@@ -67,8 +67,6 @@ public class UserContactApply implements Serializable {
      */
     private String applyInfo;
 
-    private String orderBy;
-
     private Integer pageNo;
     private Integer pageSize;
     /**

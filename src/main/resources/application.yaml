@@ -28,3 +28,6 @@ logging:
     springfox: DEBUG
     org.apache.ibatis: DEBUG
     org.mybatis.spring.SqlSessionFactoryBean: DEBUG
+
+app:
+  project-folder: /Users/tszwaidai/Desktop/easychat/src/main/resources/images  # 自定义的项目文件夹

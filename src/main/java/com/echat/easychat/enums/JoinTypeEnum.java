@@ -15,7 +15,7 @@ public enum JoinTypeEnum {
     public String getDesc() {
         return desc;
     }
-    public static JoinTypeEnum fromStatus(Integer status) {
+    public static JoinTypeEnum getByStatus(Integer status) {
         for (JoinTypeEnum contactTypes : JoinTypeEnum.values()) {
             if (contactTypes.getStatus().equals(status)) {
                 return contactTypes;
